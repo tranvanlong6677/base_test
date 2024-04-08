@@ -1,8 +1,7 @@
 import Header from "../components/Header";
-// import { ChildrenProps } from "../types";
+import { ChildrenProps } from "../types";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const DefaultLayout = ({ children }: any) => {
+const DefaultLayout = ({ children }: ChildrenProps) => {
   return (
     <div className="wrapper">
       <Header />
