@@ -1,0 +1,30 @@
+.btn {
+  color: #fff;
+  max-width: 106px;
+  width: 100%;
+  height: 32px;
+  border-radius: 6px;
+  padding: 4px 16px;
+  border: none;
+}
+
+.btn-success {
+  background-color: $btn-color-success;
+  &:hover {
+    background-color: $btn-color-success-hover;
+  }
+}
+
+.btn-info {
+  background-color: $btn-color-info;
+  &:hover {
+    background-color: $btn-color-info-hover;
+  }
+}
+
+.btn-danger {
+  background-color: $btn-color-danger;
+  &:hover {
+    background-color: $btn-color-danger-hover;
+  }
+}
