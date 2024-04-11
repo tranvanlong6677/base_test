@@ -55,16 +55,16 @@
 //     @content;
 //   }
 // }
-// @mixin mq_max_768 {
-//   @media screen and (min-width: 768px) {
-//     @content;
-//   }
-// }
-// @mixin mq_min_1024 {
-//   @media screen and (min-width: 1000px) {
-//     @content;
-//   }
-// }
+@mixin mq_min_768 {
+  @media screen and (min-width: 768px) {
+    @content;
+  }
+}
+@mixin mq_min_1024 {
+  @media screen and (min-width: 1024px) {
+    @content;
+  }
+}
 // @mixin mq_min_1024 {
 //   @media #{$mq_min_1024} {
 //     @content;

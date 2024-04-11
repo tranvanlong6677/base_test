@@ -1,0 +1,39 @@
+.btn-review-questions-wrapper {
+  gap: 20px;
+  margin-top: 80px;
+  .ant-card {
+    cursor: pointer;
+    .ant-card-body {
+      background-color: #f0f0f0;
+      padding: 30px;
+      border-radius: 8px;
+
+      span {
+        font-weight: 500;
+        font-size: 18px;
+        line-height: 20px;
+      }
+
+      @include mq_min_650 {
+        padding: 50px;
+        border-radius: 12px;
+
+        span {
+          font-size: 26px;
+          line-height: 22px;
+        }
+      }
+    }
+  }
+  .ant-card.card-selected {
+    .ant-card-body {
+      border: 2px solid black;
+      span {
+        color: #64b445;
+        stroke: #000;
+        text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000,
+          1px 1px 0 #000;
+      }
+    }
+  }
+}

@@ -1,12 +1,4 @@
 .wrapper-login {
-  .logo {
-    margin: 30px auto 20px;
-    width: 140px;
-    @include mq_min_650 {
-      margin: 46px auto 35px;
-      width: 183px;
-    }
-  }
   .header-login {
     margin-bottom: 20px;
     @include mq_min_650 {

@@ -1,0 +1,27 @@
+.header-wrapper {
+  margin: 20px 0;
+  @include mq_min_650 {
+    margin: 24px 0;
+  }
+  @include mq_min_768 {
+    margin: 32px 0;
+  }
+  @include mq_min_1024 {
+    margin: 40px 0;
+  }
+
+  .icon-search-header {
+    svg {
+      font-size: 15px;
+      @include mq_min_650 {
+        font-size: 18px;
+      }
+      @include mq_min_768 {
+        font-size: 24px;
+      }
+      @include mq_min_1024 {
+        font-size: 30px;
+      }
+    }
+  }
+}

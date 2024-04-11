@@ -6,18 +6,16 @@ import Zalo from "../views/Login/Zalo";
 
 const PublicRoutes = () => {
   return (
-    <>
-      <DefaultLayoutLogin>
-        <Switch>
-          <Route exact path={routesObject.login} component={() => <Login />} />
-          <Route
-            exact
-            path={routesObject.loginWithZalo}
-            component={() => <Zalo />}
-          />
-        </Switch>
-      </DefaultLayoutLogin>
-    </>
+    <DefaultLayoutLogin>
+      <Switch>
+        <Route exact path={routesObject.login} component={() => <Login />} />
+        <Route
+          exact
+          path={routesObject.loginWithZalo}
+          component={() => <Zalo />}
+        />
+      </Switch>
+    </DefaultLayoutLogin>
   );
 };
 

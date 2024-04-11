@@ -7,15 +7,17 @@
   padding: 0;
   margin: 0;
   box-sizing: border-box;
-  font-size: 12px;
+  font-size: 10px;
+  @include mq_min_650 {
+    font-size: 12px;
+  }
 }
 
 #root {
-  max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
   text-align: center;
   font-family: "Inter";
+  padding-right: 2rem !important;
 }
 
 .header-1 {
@@ -35,4 +37,39 @@
   @include mq_min_650 {
     font-size: 15px;
   }
+}
+
+.logo-wrapper {
+  display: block;
+  margin: 30px auto 20px;
+  .logo {
+    width: 140px;
+  }
+
+  @include mq_min_650 {
+    margin: 46px auto 35px;
+    .logo {
+      width: 183px;
+    }
+  }
+}
+
+.wrapper {
+  display: flex;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.w-100 {
+  width: 100%;
 }

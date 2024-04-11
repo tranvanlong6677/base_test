@@ -2,19 +2,24 @@ import { UserOutlined } from "@ant-design/icons";
 import { Button, Form, FormProps, GetProp, Input, notification } from "antd";
 import { authApi } from "../../../api/authApi";
 import { loginWithZaloType, verifyLoginWithZaloType } from "../../../types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import routesObject from "../../../utils/routes";
+import { useHistory } from "react-router-dom";
 
 const Index = () => {
+  const history = useHistory();
   const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [isShowVerification, setIsShowVerification] = useState<boolean>(false);
   const onFinish: FormProps<loginWithZaloType>["onFinish"] = async (values) => {
     console.log("Success:", values);
+
     setPhoneNumber(values.phone);
     try {
-      await authApi.loginWithZalo({
+      const res = await authApi.loginWithZalo({
         phone: values.phone,
         sentAt: Date.now(),
       });
+      console.log(">>> check res", res);
       setIsShowVerification(true);
     } catch (error) {
       notification.error({
@@ -26,15 +31,20 @@ const Index = () => {
     async (values) => {
       console.log("Success:", values);
       try {
-        const result = await authApi.verificationCodeLoginZalo({
+        const result = (await authApi.verificationCodeLoginZalo({
           phone: phoneNumber ?? "",
           OTP: values.OTP,
-        });
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        })) as any;
         console.log(">>>> check result ", result);
+        if (result && result.access_token) {
+          localStorage.setItem("access_token", result.access_token);
+        }
         setIsShowVerification(true);
         notification.success({
           message: "Đăng nhập thành công",
         });
+        history.push(routesObject.home);
       } catch (error) {
         console.log(">>> check error", error);
       }
@@ -57,6 +67,8 @@ const Index = () => {
   const sharedProps = {
     onChange,
   };
+
+  useEffect(() => {}, []);
   return (
     <>
       <p className="introduction">

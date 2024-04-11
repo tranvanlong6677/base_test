@@ -1,9 +1,9 @@
 import "./assets/styles.scss";
 import { ConfigProvider, ThemeConfig } from "antd";
 // import ProtectedRoutes from "./routes/ProtectedRoutes";
-import PublicRoutes from "./routes/PublicRoutes";
 import { BrowserRouter } from "react-router-dom";
 import { useState } from "react";
+import ProtectedRoutes from "./routes/ProtectedRoutes";
 const App = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [theme, setTheme] = useState("light");
@@ -36,8 +36,8 @@ const App = () => {
           </DefaultLayout>
         </Router> */}
         <BrowserRouter>
-          <PublicRoutes />
-          {/* <ProtectedRoutes /> */}
+          {/* <PublicRoutes /> */}
+          <ProtectedRoutes />
         </BrowserRouter>
       </ConfigProvider>
     </>
