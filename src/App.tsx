@@ -2,8 +2,9 @@ import "./assets/styles.scss";
 import { ConfigProvider, ThemeConfig } from "antd";
 // import ProtectedRoutes from "./routes/ProtectedRoutes";
 import { BrowserRouter } from "react-router-dom";
-import { useState } from "react";
 import ProtectedRoutes from "./routes/ProtectedRoutes";
+import { useState } from "react";
+
 const App = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [theme, setTheme] = useState("light");

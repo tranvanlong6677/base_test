@@ -1,0 +1,33 @@
+.image-wrapper {
+  cursor: pointer;
+  text-align: left;
+  margin-bottom: 20px;
+  .label-c {
+    // display: block;
+    .question_difficulty,
+    .question_level {
+      color: #7a0916;
+    }
+  }
+
+  .label-cb {
+    .question_difficulty,
+    .question_level {
+      color: #003768;
+    }
+  }
+
+  .label-nc {
+    .question_difficulty,
+    .question_level {
+      color: #7a4100;
+    }
+  }
+  .img-question {
+    margin: 10px 0;
+    display: block;
+  }
+  .label .label-id {
+    color: #808080;
+  }
+}

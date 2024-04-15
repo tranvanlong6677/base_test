@@ -30,10 +30,30 @@
       border: 2px solid black;
       span {
         color: #64b445;
-        stroke: #000;
-        text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000,
-          1px 1px 0 #000;
       }
     }
   }
+}
+
+.card-quantity-question-advanced,
+.card-quantity-question-basic,
+.card-quantity-question-specialized {
+  .quantity-question {
+  }
+
+  .type-question {
+    font-size: 16px;
+  }
+}
+.card-quantity-question-basic {
+  background-color: #d2f4f9;
+  color: #003768;
+}
+.card-quantity-question-advanced {
+  background-color: #fff4da;
+  color: #7a4100;
+}
+.card-quantity-question-specialized {
+  background-color: #ffe9e1;
+  color: #7a0916;
 }

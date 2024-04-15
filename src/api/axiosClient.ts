@@ -15,10 +15,11 @@ const axiosClient: AxiosInstance = axios.create({
 axiosClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig<any>) => {
     const newConfig: InternalAxiosRequestConfig<any> = config;
+    // console.log(JSON.parse(localStorage.getItem("access_token") ?? ""));
     const token =
       localStorage.getItem("access_token") === null
         ? "null"
-        : JSON.parse(localStorage.getItem("access_token")!);
+        : localStorage.getItem("access_token") ?? "";
 
     if (token && token !== "undefined" && token !== "null") {
       newConfig.headers.Authorization = `Bearer ${token}`;

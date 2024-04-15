@@ -6,6 +6,7 @@ import PublicRoutes from "./PublicRoutes";
 import Home from "../views/Home/Home";
 import About from "../views/About";
 import QuestionsBank from "../views/QuestionsBank";
+import ReviewQuestions from "../views/QuestionsBank/ReviewQuestions";
 
 const ProtectedRoutes = () => {
   const history = useHistory();
@@ -41,6 +42,12 @@ const ProtectedRoutes = () => {
               exact
               path={routesObject.questionsBank}
               component={() => <QuestionsBank />}
+            />
+
+            <Route
+              exact
+              path={routesObject.reviewQuestions}
+              component={() => <ReviewQuestions />}
             />
           </Switch>
         </DefaultLayout>

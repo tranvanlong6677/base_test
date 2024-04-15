@@ -50,6 +50,11 @@
     @content;
   }
 }
+@mixin mq_min_670 {
+  @media screen and (min-width: 670px) {
+    @content;
+  }
+}
 // @mixin mq_min_675 {
 //   @media screen and (min-width: 675px) {
 //     @content;
