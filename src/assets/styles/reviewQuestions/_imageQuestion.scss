@@ -1,7 +1,12 @@
 .image-wrapper {
   cursor: pointer;
   text-align: left;
-  margin-bottom: 20px;
+  // margin-bottom: 20px;
+  padding: 20px 0;
+  border-bottom: 1px solid black;
+  &:last-child {
+    border: none;
+  }
   .label-c {
     // display: block;
     .question_difficulty,

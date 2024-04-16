@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const ImageQuestion = (props: any) => {
-  const { data, setIsModalOpen, dispatch } = props;
+  const { data, setIsModalOpen, dispatch, isApproved } = props;
   return (
     <>
       <div
@@ -40,13 +40,15 @@ const ImageQuestion = (props: any) => {
               </span>
             </div>
             <img src={data?.image_url} alt="" className="img-question" />
-            <div className="label-id">{data?.id}</div>
+            <div className="label-id">
+              {data?.id} {" - "}
+              {isApproved ? "Đã được duyệt" : "Chưa được duyệt"}
+            </div>
           </>
         ) : (
           <></>
         )}
       </div>
-      <hr />
     </>
   );
 };

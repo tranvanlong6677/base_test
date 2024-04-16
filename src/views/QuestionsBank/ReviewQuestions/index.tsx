@@ -12,7 +12,7 @@ import {
 } from "antd";
 import { itemsBreadCrumb } from "../../../utils/itemsBreadCrumb";
 import { Form, type FormProps } from "antd";
-import { createContext, useReducer, useState } from "react";
+import { createContext, useEffect, useReducer, useState } from "react";
 import QuantityQuestions from "../../../components/QuantityQuestions";
 import { typeQuestions } from "../../../utils/typeQuestions";
 import ListImageQuestion from "../ListImageQuestion";
@@ -56,8 +56,12 @@ const ReviewQuestions = () => {
   const [listQuestionNotApproved, setListQuestionNotApproved] = useState<any[]>(
     []
   );
-
+  const [loading, setLoading] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [cb, setCb] = useState(0);
+  const [nc, setNc] = useState(0);
+  const [c, setC] = useState(0);
+
   const handleOk = () => {
     setIsModalOpen(false);
   };
@@ -68,7 +72,9 @@ const ReviewQuestions = () => {
   const items: TabsProps["items"] = [
     {
       key: "1",
-      label: `Câu hỏi chưa duyệt (${listQuestionNotApproved.length})`,
+      label: `Câu hỏi chưa duyệt (${
+        loading ? 0 : listQuestionNotApproved.length
+      })`,
       children: (
         <ListImageQuestion
           listQuestion={
@@ -77,12 +83,15 @@ const ReviewQuestions = () => {
           setIsModalOpen={setIsModalOpen}
           isModalOpen={isModalOpen}
           dispatch={dispatch}
+          isApproved={false}
+          loading={loading}
+          setLoading={setLoading}
         />
       ),
     },
     {
       key: "2",
-      label: `Câu hỏi đã duyệt (${listQuestionApproved.length})`,
+      label: `Câu hỏi đã duyệt (${loading ? 0 : listQuestionApproved.length})`,
       children: (
         <ListImageQuestion
           listQuestion={
@@ -91,6 +100,9 @@ const ReviewQuestions = () => {
           setIsModalOpen={setIsModalOpen}
           isModalOpen={isModalOpen}
           dispatch={dispatch}
+          isApproved={true}
+          loading={loading}
+          setLoading={setLoading}
         />
       ),
     },
@@ -113,26 +125,32 @@ const ReviewQuestions = () => {
   const onSelect = async (data: string, option: any) => {
     console.log("onSelect", data);
     console.log("option", option);
-    const result: any = await questionApi.fetchQuestionForTopic({
-      domain: {
-        value: subject.value,
-        label: subject.value,
-      },
-      grade: {
-        value: grade.value,
-        label: grade.value,
-      },
-      topics: [{ label: option.label, value: option.valueCode }],
-    });
-
-    console.log(">>> check fetch question", result);
-    const resultApproved = result?.filter((item: any) => item.status === "1");
-    const resultNotApproved = result?.filter(
-      (item: any) => item.status === "0"
-    );
-    console.log(">>> check approval", resultApproved);
-    setListQuestionApproved(resultApproved as any);
-    setListQuestionNotApproved(resultNotApproved as any);
+    setLoading(true);
+    await questionApi
+      .fetchQuestionForTopic({
+        domain: {
+          value: subject.value,
+          label: subject.value,
+        },
+        grade: {
+          value: grade.value,
+          label: grade.value,
+        },
+        topics: [{ label: option.label, value: option.valueCode }],
+      })
+      .then((response: any) => {
+        setLoading(false);
+        console.log(">>> check result1111", response);
+        setListQuestion(response);
+        const resultApproved = response?.filter(
+          (item: any) => item.status === "1"
+        );
+        const resultNotApproved = response?.filter(
+          (item: any) => item.status === "0"
+        );
+        setListQuestionApproved(resultApproved as any);
+        setListQuestionNotApproved(resultNotApproved as any);
+      });
   };
 
   const onChange = (dataInput: string) => {
@@ -141,6 +159,7 @@ const ReviewQuestions = () => {
       const filteredOptions = topicOptions?.filter((data) =>
         data.label.toLowerCase().includes(dataInput.toLowerCase())
       );
+
       setTopicOptions(filteredOptions);
     }
   };
@@ -156,23 +175,38 @@ const ReviewQuestions = () => {
     grade: string;
     domain: string;
   }) => {
-    const result: any = await questionApi.fetchTopic({
-      grade,
-      domain,
-    });
-    console.log(">>> check result abc", result);
-    console.log(">>> check result", result);
-    const optionResult: Option[] = result?.map((item: any) => {
-      return {
-        label: item.label,
-        value: item.label,
-        valueCode: item.value,
-      };
-    });
-    console.log(">>> check result abc", optionResult);
-    setTopicOptions(optionResult);
+    setLoading(true);
+    await questionApi
+      .fetchTopic({
+        grade,
+        domain,
+      })
+      .then((response: any) => {
+        setLoading(false);
+        const optionResult: Option[] = response?.map((item: any) => {
+          return {
+            label: item.label,
+            value: item.label,
+            valueCode: item.value,
+          };
+        });
+        setTopicOptions(optionResult);
+      });
   };
-
+  useEffect(() => {
+    const listCb = listQuestion.filter(
+      (item: any) => item.question_difficulty === "cb"
+    );
+    const listNc = listQuestion.filter(
+      (item: any) => item.question_difficulty === "nc"
+    );
+    const listC = listQuestion.filter(
+      (item: any) => item.question_difficulty === "c"
+    );
+    setCb(listCb.length);
+    setNc(listNc.length);
+    setC(listC.length);
+  }, [listQuestion]);
   return (
     <CustomContext.Provider
       value={{ isModalOpen: false, dataModalReviewQuestion: {} }}
@@ -325,15 +359,15 @@ const ReviewQuestions = () => {
           <span className="review-questions-title">Số lượng câu hỏi</span>
           <Row className="quantity-question-row">
             <QuantityQuestions
-              quantity={128}
+              quantity={cb}
               typeQuestion={typeQuestions.BASIC}
             />
             <QuantityQuestions
-              quantity={142}
+              quantity={nc}
               typeQuestion={typeQuestions.ADVANCED}
             />
             <QuantityQuestions
-              quantity={2523}
+              quantity={c}
               typeQuestion={typeQuestions.SPECIALIZED}
             />
           </Row>
