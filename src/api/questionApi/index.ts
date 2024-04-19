@@ -36,6 +36,7 @@ export const questionApi = {
     domain,
     grade,
     topics,
+    status,
   }: {
     domain: {
       value: string;
@@ -49,6 +50,7 @@ export const questionApi = {
       value: string;
       label: string;
     }[];
+    status: number;
   }) {
     const url = `/question/filter`;
     const dataRequest = {
@@ -58,9 +60,23 @@ export const questionApi = {
         topics,
         objectives: [],
         level: null,
-        status: "0",
+        status: `${status}`,
       },
     };
     return axiosClient.post(url, dataRequest);
+  },
+
+  async changeDifficultyQuestion(id: number, difficulty: string) {
+    const url = `/question/change-difficulty?id=${id}&dif=${difficulty}`;
+    return axiosClient.post(url);
+  },
+  async changLevelQuestion(id: number, vd: string) {
+    const url = `/question/change-vd?id=${id}&vd=${vd}`;
+    return axiosClient.post(url);
+  },
+
+  async approveQuestion(id: number) {
+    const url = `/question/approve?id=${id}`;
+    return axiosClient.post(url);
   },
 };

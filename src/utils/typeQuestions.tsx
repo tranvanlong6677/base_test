@@ -3,3 +3,9 @@ export const typeQuestions = {
   ADVANCED: "câu nâng cao",
   SPECIALIZED: "câu chuyên",
 };
+
+export const typeQuestionsShort = {
+  BASIC: "cb",
+  ADVANCED: "nc",
+  SPECIALIZED: "c",
+};

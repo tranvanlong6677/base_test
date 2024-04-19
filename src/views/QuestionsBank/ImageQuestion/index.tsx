@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const ImageQuestion = (props: any) => {
-  const { data, setIsModalOpen, dispatch, isApproved } = props;
+  const { data, dispatch, isApproved, setIsOpenDrawer } = props;
   return (
     <>
       <div
         className="image-wrapper"
         onClick={() => {
-          setIsModalOpen(true);
+          // setIsModalOpen(true);
+          setIsOpenDrawer(true);
           dispatch({ data: data });
-          console.log(data);
+          console.log("hihi data", data);
         }}
       >
         {data.image_url ? (

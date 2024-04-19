@@ -4,17 +4,21 @@ import {
   AutoComplete,
   Breadcrumb,
   Button,
-  Modal,
+  Drawer,
   Row,
   Select,
   Tabs,
   TabsProps,
+  notification,
 } from "antd";
 import { itemsBreadCrumb } from "../../../utils/itemsBreadCrumb";
 import { Form, type FormProps } from "antd";
 import { createContext, useEffect, useReducer, useState } from "react";
 import QuantityQuestions from "../../../components/QuantityQuestions";
-import { typeQuestions } from "../../../utils/typeQuestions";
+import {
+  typeQuestions,
+  typeQuestionsShort,
+} from "../../../utils/typeQuestions";
 import ListImageQuestion from "../ListImageQuestion";
 import { useForm } from "antd/es/form/Form";
 import { subjects } from "../../../utils/optionSelect/subjectsOption";
@@ -22,7 +26,7 @@ import { gradeOptions } from "../../../utils/optionSelect/gradeOptions";
 import { questionApi } from "../../../api/questionApi";
 import { Option } from "antd/es/mentions";
 import { approvalQuestionReducer } from "../../../reducer/ApprovalQuestion";
-import { CloseOutlined } from "@ant-design/icons";
+import { levelQuestions } from "../../../utils/levelQuestions";
 type FieldType = {
   grade: string;
   domain: string;
@@ -32,6 +36,11 @@ interface Option {
   label: string;
   value: string;
   valueCode: string;
+}
+
+interface DataButtonModalReviewQuestion {
+  difficulty: string;
+  level: string;
 }
 const CustomContext = createContext({
   isModalOpen: false,
@@ -57,31 +66,25 @@ const ReviewQuestions = () => {
     []
   );
   const [loading, setLoading] = useState<boolean>(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [cb, setCb] = useState(0);
-  const [nc, setNc] = useState(0);
-  const [c, setC] = useState(0);
+  const [isOpenDrawer, setIsOpenDrawer] = useState(false);
+  const [dataButtonModalReviewQuestion, setDataButtonModalReviewQuestion] =
+    useState<DataButtonModalReviewQuestion>({
+      difficulty: "cb",
+      level: "NB",
+    });
+  const [key, setKey] = useState<string>("1");
 
-  const handleOk = () => {
-    setIsModalOpen(false);
-  };
+  const [topicOptionSelected, setTopicOptionSelected] = useState<Option>();
 
-  const handleCancel = () => {
-    setIsModalOpen(false);
-  };
   const items: TabsProps["items"] = [
     {
       key: "1",
-      label: `Câu hỏi chưa duyệt (${
-        loading ? 0 : listQuestionNotApproved.length
-      })`,
+      label: `Câu hỏi chưa duyệt (${listQuestionNotApproved.length})`,
       children: (
         <ListImageQuestion
-          listQuestion={
-            listQuestionNotApproved.length > 0 ? listQuestionNotApproved : []
-          }
-          setIsModalOpen={setIsModalOpen}
-          isModalOpen={isModalOpen}
+          listQuestion={listQuestion.length > 0 ? listQuestion : []}
+          isOpenDrawer={isOpenDrawer}
+          setIsOpenDrawer={setIsOpenDrawer}
           dispatch={dispatch}
           isApproved={false}
           loading={loading}
@@ -91,14 +94,12 @@ const ReviewQuestions = () => {
     },
     {
       key: "2",
-      label: `Câu hỏi đã duyệt (${loading ? 0 : listQuestionApproved.length})`,
+      label: `Câu hỏi đã duyệt (${listQuestionApproved.length})`,
       children: (
         <ListImageQuestion
-          listQuestion={
-            listQuestionApproved.length > 0 ? listQuestionApproved : []
-          }
-          setIsModalOpen={setIsModalOpen}
-          isModalOpen={isModalOpen}
+          listQuestion={listQuestion.length > 0 ? listQuestion : []}
+          isOpenDrawer={isOpenDrawer}
+          setIsOpenDrawer={setIsOpenDrawer}
           dispatch={dispatch}
           isApproved={true}
           loading={loading}
@@ -122,50 +123,15 @@ const ReviewQuestions = () => {
 
   //   auto complete
 
-  const onSelect = async (data: string, option: any) => {
-    console.log("onSelect", data);
-    console.log("option", option);
-    setLoading(true);
-    await questionApi
-      .fetchQuestionForTopic({
-        domain: {
-          value: subject.value,
-          label: subject.value,
-        },
-        grade: {
-          value: grade.value,
-          label: grade.value,
-        },
-        topics: [{ label: option.label, value: option.valueCode }],
-      })
-      .then((response: any) => {
-        setLoading(false);
-        console.log(">>> check result1111", response);
-        setListQuestion(response);
-        const resultApproved = response?.filter(
-          (item: any) => item.status === "1"
-        );
-        const resultNotApproved = response?.filter(
-          (item: any) => item.status === "0"
-        );
-        setListQuestionApproved(resultApproved as any);
-        setListQuestionNotApproved(resultNotApproved as any);
-      });
+  const onSelect = async (_data: string, option: any) => {
+    console.log(">>> check option", option);
+    setTopicOptionSelected(option);
+    await fetchQuestion(option);
   };
 
-  const onChange = (dataInput: string) => {
-    console.log("dataInput", dataInput);
-    if (typeof dataInput === "string") {
-      const filteredOptions = topicOptions?.filter((data) =>
-        data.label.toLowerCase().includes(dataInput.toLowerCase())
-      );
-
-      setTopicOptions(filteredOptions);
-    }
-  };
-
-  const onChangeTabs = (key: string) => {
-    console.log(key);
+  const onChangeTabs = (keyTab: string) => {
+    console.log(keyTab);
+    setKey(keyTab);
   };
 
   const fetchTopicForGradeAndSubject = async ({
@@ -193,68 +159,291 @@ const ReviewQuestions = () => {
         setTopicOptions(optionResult);
       });
   };
+
+  const handleChangeDifficulty = async (type: string) => {
+    try {
+      const result: any = await questionApi.changeDifficultyQuestion(
+        dataModalReviewQuestion.id,
+        type
+      );
+      if (result === 200) {
+        notification.success({
+          message: "Thành công",
+          description: "Thay đổi độ khó thành công",
+        });
+      }
+    } catch (error) {
+      notification.error({
+        message: "Lỗi",
+        description: "Có lỗi xảy ra",
+      });
+    }
+  };
+
+  const handleChangeLevel = async (id: number, level: string) => {
+    try {
+      const result = await questionApi.changLevelQuestion(id, level);
+      notification.success({
+        message: "Thành công",
+        description: "Thay đổi level thành công",
+      });
+    } catch (error) {
+      notification.error({
+        message: "Lỗi",
+        description: "Có lỗi xảy ra",
+      });
+    }
+  };
+
+  const fetchQuestion = async (option: any) => {
+    setLoading(true);
+    const resultApproved = await questionApi
+      .fetchQuestionForTopic({
+        domain: {
+          value: subject.value,
+          label: subject.value,
+        },
+        grade: {
+          value: grade.value,
+          label: grade.value,
+        },
+        topics: [{ label: option.label, value: option.valueCode }],
+        status: 1,
+      })
+      .then((response: any) => {
+        setLoading(false);
+        setListQuestionApproved(response);
+        // setListQuestionNotApproved(resultNotApproved as any);
+        return response;
+      });
+    const resultNotApproved = await questionApi
+      .fetchQuestionForTopic({
+        domain: {
+          value: subject.value,
+          label: subject.value,
+        },
+        grade: {
+          value: grade.value,
+          label: grade.value,
+        },
+        topics: [{ label: option.label, value: option.valueCode }],
+        status: 0,
+      })
+      .then((response: any) => {
+        setLoading(false);
+        setListQuestionNotApproved(response);
+        // setListQuestionNotApproved(resultNotApproved as any);
+        return response;
+      });
+    setLoading(false);
+    console.log(">>> check asfbiasbfiuasbuif", [
+      ...resultApproved,
+      ...resultNotApproved,
+    ]);
+    return [...resultApproved, ...resultNotApproved];
+  };
+
+  const handleApproveQuestion = async (id: number) => {
+    try {
+      const result = await questionApi.approveQuestion(id);
+      setIsOpenDrawer(false);
+      notification.success({
+        message: "Thành công",
+        description: "Duyệt câu hỏi thành công",
+      });
+      await fetchQuestion(topicOptionSelected);
+    } catch (error) {
+      notification.error({
+        message: "Lỗi",
+        description: "Có lỗi xảy ra",
+      });
+    }
+  };
+
   useEffect(() => {
-    const listCb = listQuestion.filter(
-      (item: any) => item.question_difficulty === "cb"
+    setDataButtonModalReviewQuestion({
+      difficulty: dataModalReviewQuestion.question_difficulty,
+      level: dataModalReviewQuestion.question_level,
+    });
+  }, [dataModalReviewQuestion, isOpenDrawer, listQuestion]);
+  useEffect(() => {
+    setListQuestion(
+      key === "1" ? listQuestionNotApproved : listQuestionApproved
     );
-    const listNc = listQuestion.filter(
-      (item: any) => item.question_difficulty === "nc"
-    );
-    const listC = listQuestion.filter(
-      (item: any) => item.question_difficulty === "c"
-    );
-    setCb(listCb.length);
-    setNc(listNc.length);
-    setC(listC.length);
-  }, [listQuestion]);
+  }, [key, listQuestionNotApproved, listQuestionApproved]);
   return (
     <CustomContext.Provider
       value={{ isModalOpen: false, dataModalReviewQuestion: {} }}
     >
       <div className="review-questions-wrapper">
-        <Modal
-          title={
-            <>
-              <CloseOutlined onClick={() => setIsModalOpen(false)} />
-              Phân loại câu hỏi
-            </>
-          }
-          footer={null}
-          styles={{
-            header: { display: "flex", alignItems: "center" },
-          }}
-          open={isModalOpen}
-          onOk={handleOk}
-          onCancel={handleCancel}
-          closeIcon={<Button>Đóng</Button>}
-          // mask={false}
-          className="modal-review-questions-wrapper"
-          width={window.innerWidth}
+        <Drawer
+          title="Phân loại câu hỏi"
+          onClose={() => setIsOpenDrawer(false)}
+          open={isOpenDrawer}
+          placement={"bottom"}
+          extra={<Button onClick={() => setIsOpenDrawer(false)}>Đóng</Button>}
+          size="large"
         >
           <img src={dataModalReviewQuestion?.image_url} alt="" />
 
           <div className="difficulty">
             <span className="title">Độ khó</span>
             <div className="btn-wrapper">
-              <Button className="" type="primary">
+              <Button
+                className=""
+                type={
+                  dataButtonModalReviewQuestion.difficulty === "cb"
+                    ? "primary"
+                    : "default"
+                }
+                onClick={async () => {
+                  if (dataModalReviewQuestion.status === "0") {
+                    await handleChangeDifficulty(typeQuestionsShort.BASIC);
+                    const result = await fetchQuestion(topicOptionSelected);
+                    const dataModalNew = result?.filter(
+                      (item: any) => item.id === dataModalReviewQuestion.id
+                    );
+                    console.log(">>> check dataModalNew[0] ", dataModalNew[0]);
+                    dispatch({ data: dataModalNew[0] });
+                  }
+                }}
+              >
                 Cơ bản
               </Button>
-              <Button className="">Nâng cao</Button>
-              <Button className="">Chuyên</Button>
+              <Button
+                className=""
+                onClick={async () => {
+                  if (dataModalReviewQuestion.status === "0") {
+                    await handleChangeDifficulty(typeQuestionsShort.ADVANCED);
+                    const result = await fetchQuestion(topicOptionSelected);
+                    const dataModalNew = result?.filter(
+                      (item: any) => item.id === dataModalReviewQuestion.id
+                    );
+                    dispatch({ data: dataModalNew[0] });
+                  }
+                }}
+                type={
+                  dataButtonModalReviewQuestion.difficulty === "nc"
+                    ? "primary"
+                    : "default"
+                }
+              >
+                Nâng cao
+              </Button>
+              <Button
+                className=""
+                onClick={async () => {
+                  if (dataModalReviewQuestion.status === "0") {
+                    await handleChangeDifficulty(
+                      typeQuestionsShort.SPECIALIZED
+                    );
+                    const result = await fetchQuestion(topicOptionSelected);
+                    const dataModalNew = result?.filter(
+                      (item: any) => item.id === dataModalReviewQuestion.id
+                    );
+                    dispatch({ data: dataModalNew[0] });
+                  }
+                }}
+                type={
+                  dataButtonModalReviewQuestion.difficulty === "c"
+                    ? "primary"
+                    : "default"
+                }
+              >
+                Chuyên
+              </Button>
             </div>
           </div>
 
           <div className="level">
             <span className="title">Mức độ vận dụng</span>
             <div className="btn-wrapper">
-              <Button className="" type="primary">
+              <Button
+                className=""
+                type={
+                  dataButtonModalReviewQuestion.level === levelQuestions.NB
+                    ? "primary"
+                    : "default"
+                }
+                onClick={async () => {
+                  if (dataModalReviewQuestion.status === "0") {
+                    await handleChangeLevel(
+                      dataModalReviewQuestion.id,
+                      levelQuestions.NB
+                    );
+                    const result = await fetchQuestion(topicOptionSelected);
+                    const dataModalNew = result?.filter(
+                      (item: any) => item.id === dataModalReviewQuestion.id
+                    );
+                    dispatch({ data: dataModalNew[0] });
+                  }
+                }}
+              >
                 Vận dụng thấp
               </Button>
-              <Button className="">Vận dụng cao</Button>
-              <Button className="">Tổng hợp</Button>
+              <Button
+                className=""
+                type={
+                  dataButtonModalReviewQuestion.level === levelQuestions.VDC
+                    ? "primary"
+                    : "default"
+                }
+                onClick={async () => {
+                  if (dataModalReviewQuestion.status === "0") {
+                    await handleChangeLevel(
+                      dataModalReviewQuestion.id,
+                      levelQuestions.VDC
+                    );
+                    const result = await fetchQuestion(topicOptionSelected);
+                    const dataModalNew = result?.filter(
+                      (item: any) => item.id === dataModalReviewQuestion.id
+                    );
+                    dispatch({ data: dataModalNew[0] });
+                  }
+                }}
+              >
+                Vận dụng cao
+              </Button>
+              <Button
+                className=""
+                type={
+                  dataButtonModalReviewQuestion.level === levelQuestions.TH
+                    ? "primary"
+                    : "default"
+                }
+                onClick={async () => {
+                  if (dataModalReviewQuestion.status === "0") {
+                    await handleChangeLevel(
+                      dataModalReviewQuestion.id,
+                      levelQuestions.TH
+                    );
+                    const result = await fetchQuestion(topicOptionSelected);
+                    const dataModalNew = result?.filter(
+                      (item: any) => item.id === dataModalReviewQuestion.id
+                    );
+                    dispatch({ data: dataModalNew[0] });
+                  }
+                }}
+              >
+                Tổng hợp
+              </Button>
             </div>
           </div>
-        </Modal>
+          {dataModalReviewQuestion.status === "1" ? (
+            <></>
+          ) : (
+            <div className="approval">
+              <Button
+                type="primary"
+                onClick={() =>
+                  handleApproveQuestion(dataModalReviewQuestion.id)
+                }
+              >
+                Duyệt câu hỏi
+              </Button>
+            </div>
+          )}
+        </Drawer>
         <h1 className="header-1" style={{ textAlign: "left" }}>
           Ngân hàng câu hỏi
         </h1>
@@ -291,7 +480,6 @@ const ReviewQuestions = () => {
                 }
               }}
               onSelect={(_data, option) => {
-                console.log(">>> check option1 ", option);
                 setGrade(option);
               }}
             />
@@ -330,11 +518,9 @@ const ReviewQuestions = () => {
             <AutoComplete
               options={topicOptions}
               onSelect={onSelect}
-              // onSearch={(text) => setOptions(getPanelValue(text))}
               placeholder="Lựa chọn khung kiến thức"
-              onChange={onChange}
               allowClear
-              value={"hihi"}
+              filterOption
               onClear={() => {
                 if (
                   form.getFieldValue("grade") &&
@@ -358,18 +544,79 @@ const ReviewQuestions = () => {
         <div className="quantity-questions-wrapper">
           <span className="review-questions-title">Số lượng câu hỏi</span>
           <Row className="quantity-question-row">
-            <QuantityQuestions
-              quantity={cb}
-              typeQuestion={typeQuestions.BASIC}
-            />
-            <QuantityQuestions
-              quantity={nc}
-              typeQuestion={typeQuestions.ADVANCED}
-            />
-            <QuantityQuestions
-              quantity={c}
-              typeQuestion={typeQuestions.SPECIALIZED}
-            />
+            <div
+              onClick={() => {
+                setListQuestion(
+                  (key === "1"
+                    ? listQuestionNotApproved
+                    : listQuestionApproved
+                  ).filter(
+                    (item) =>
+                      item.question_difficulty === typeQuestionsShort.BASIC
+                  )
+                );
+              }}
+            >
+              <QuantityQuestions
+                quantity={
+                  (key === "1"
+                    ? listQuestionNotApproved
+                    : listQuestionApproved
+                  ).filter((item: any) => item.question_difficulty === "cb")
+                    .length
+                }
+                typeQuestion={typeQuestions.BASIC}
+              />
+            </div>
+            <div
+              onClick={() => {
+                setListQuestion(
+                  (key === "1"
+                    ? listQuestionNotApproved
+                    : listQuestionApproved
+                  ).filter(
+                    (item) =>
+                      item.question_difficulty === typeQuestionsShort.ADVANCED
+                  )
+                );
+              }}
+            >
+              <QuantityQuestions
+                quantity={
+                  (key === "1"
+                    ? listQuestionNotApproved
+                    : listQuestionApproved
+                  ).filter((item: any) => item.question_difficulty === "nc")
+                    .length
+                }
+                typeQuestion={typeQuestions.ADVANCED}
+              />
+            </div>
+            <div
+              onClick={() => {
+                setListQuestion(
+                  (key === "1"
+                    ? listQuestionNotApproved
+                    : listQuestionApproved
+                  ).filter(
+                    (item) =>
+                      item.question_difficulty ===
+                      typeQuestionsShort.SPECIALIZED
+                  )
+                );
+              }}
+            >
+              <QuantityQuestions
+                quantity={
+                  (key === "1"
+                    ? listQuestionNotApproved
+                    : listQuestionApproved
+                  ).filter((item: any) => item.question_difficulty === "c")
+                    .length
+                }
+                typeQuestion={typeQuestions.SPECIALIZED}
+              />
+            </div>
           </Row>
         </div>
 

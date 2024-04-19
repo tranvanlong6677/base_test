@@ -4,7 +4,14 @@ import ImageQuestion from "../ImageQuestion";
 import { useEffect, useState } from "react";
 
 const ListImageQuestion = (props: any) => {
-  const { listQuestion, dispatch, setIsModalOpen, isApproved, loading } = props;
+  const {
+    listQuestion,
+    dispatch,
+    isApproved,
+    loading,
+    isOpenDrawer,
+    setIsOpenDrawer,
+  } = props;
   const [isShowSkeleton, setIsShowSkeleton] = useState(loading);
   const [listQuestionDisplay, setListQuestionDisplay] = useState([]);
   useEffect(() => {
@@ -25,9 +32,10 @@ const ListImageQuestion = (props: any) => {
                 <ImageQuestion
                   key={`item${index}`}
                   data={item}
-                  setIsModalOpen={setIsModalOpen}
                   dispatch={dispatch}
                   isApproved={isApproved}
+                  isOpenDrawer={isOpenDrawer}
+                  setIsOpenDrawer={setIsOpenDrawer}
                 />
               );
             })}

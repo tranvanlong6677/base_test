@@ -11,6 +11,7 @@ const QuantityQuestions = (props: IProps) => {
     <>
       <Card
         bordered={true}
+        style={{ cursor: "pointer" }}
         // class theo typeQuestion để css
         className={
           typeQuestion === typeQuestions.BASIC
